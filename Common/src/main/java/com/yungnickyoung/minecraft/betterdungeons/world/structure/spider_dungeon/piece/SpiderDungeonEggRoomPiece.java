@@ -28,6 +28,7 @@ import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.material.Fluids;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.BitSet;
 
@@ -54,15 +55,15 @@ public class SpiderDungeonEggRoomPiece extends SpiderDungeonPiece {
      */
     public SpiderDungeonEggRoomPiece(CompoundTag compoundTag) {
         super(StructurePieceTypeModule.EGG_ROOM, compoundTag);
-        int[] start = compoundTag.getIntArray("startPos");
+        int[] start = compoundTag.getIntArray("startPos").get();
         this.startPos = new BlockPos(start[0], start[1], start[2]);
-        this.xRadius = compoundTag.getFloat("xRadius");
-        this.yRadius = compoundTag.getFloat("yRadius");
-        this.zRadius = compoundTag.getFloat("zRadius");
+        this.xRadius = compoundTag.getFloatOr("xRadius", 0.0F);
+        this.yRadius = compoundTag.getFloatOr("yRadius", 0.0F);
+        this.zRadius = compoundTag.getFloatOr("zRadius", 0.0F);
     }
 
     @Override
-    protected void addAdditionalSaveData(StructurePieceSerializationContext structurePieceSerializationContext, CompoundTag compoundTag) {
+    protected void addAdditionalSaveData(@NotNull StructurePieceSerializationContext structurePieceSerializationContext, CompoundTag compoundTag) {
         compoundTag.putIntArray("startPos", new int[]{startPos.getX(), startPos.getY(), startPos.getZ()});
         compoundTag.putFloat("xRadius", xRadius);
         compoundTag.putFloat("yRadius", yRadius);
@@ -70,7 +71,7 @@ public class SpiderDungeonEggRoomPiece extends SpiderDungeonPiece {
     }
 
     @Override
-    public void addChildren(StructurePiece structurePiece, StructurePieceAccessor structurePieceAccessor, RandomSource randomSource) {
+    public void addChildren(@NotNull StructurePiece structurePiece, @NotNull StructurePieceAccessor structurePieceAccessor, RandomSource randomSource) {
         this.xRadius = randomSource.nextFloat() * (X_MAXRADIUS - X_MINRADIUS) + X_MINRADIUS;
         this.yRadius = randomSource.nextFloat() * (Y_MAXRADIUS - Y_MINRADIUS) + Y_MINRADIUS;
         this.zRadius = randomSource.nextFloat() * (Z_MAXRADIUS - Z_MINRADIUS) + Z_MINRADIUS;
@@ -93,7 +94,7 @@ public class SpiderDungeonEggRoomPiece extends SpiderDungeonPiece {
         // Temporary chunk-local carving mask to prevent overwriting carved blocks and add decorations
         int xBits = 4;
         int zBits = 4;
-        int yBits = Mth.ceillog2(world.getMaxBuildHeight() - world.getMinBuildHeight());
+        int yBits = Mth.ceillog2(world.getMaxY() - world.getMinY());
         BitSet carvingMask = new BitSet((int) Math.pow(2, xBits + zBits + yBits));
 
         // Surface
@@ -113,8 +114,8 @@ public class SpiderDungeonEggRoomPiece extends SpiderDungeonPiece {
         // Min and max values we need to consider for carving
         int minX = Mth.floor(caveStartX - xRadius) - chunkPos.x * 16 - 1;
         int maxX = Mth.floor(caveStartX + xRadius) - chunkPos.x * 16 + 1;
-        int minY = Mth.clamp(Mth.floor(caveStartY - yRadius) - 1, world.getMinBuildHeight(), world.getMaxBuildHeight());
-        int maxY = Mth.clamp(Mth.floor(caveStartY + yRadius) + 1, world.getMinBuildHeight(), world.getMaxBuildHeight());
+        int minY = Mth.clamp(Mth.floor(caveStartY - yRadius) - 1, world.getMinY(), world.getMaxY());
+        int maxY = Mth.clamp(Mth.floor(caveStartY + yRadius) + 1, world.getMinY(), world.getMaxY());
         int minZ = Mth.floor(caveStartZ - zRadius) - chunkPos.z * 16 - 1;
         int maxZ = Mth.floor(caveStartZ + zRadius) - chunkPos.z * 16 + 1;
 
@@ -158,7 +159,7 @@ public class SpiderDungeonEggRoomPiece extends SpiderDungeonPiece {
                     float radialYDist = (y - caveStartY - .5f) / yRadius;
 
                     // Calculate the carving mask for this block
-                    int mask = (int)x | (int)z << 4 | ((int)(y - world.getMinBuildHeight())) << 8;
+                    int mask = (int)x | (int)z << 4 | ((int)(y - world.getMinY())) << 8;
 
                     // Carve out blocks within the ellipsoid. Blocks immediately outside the ellipsoid will be turned into a cobblestone shell.
                     float radialDist = radialXDist * radialXDist + radialYDist * radialYDist + radialZDist * radialZDist;

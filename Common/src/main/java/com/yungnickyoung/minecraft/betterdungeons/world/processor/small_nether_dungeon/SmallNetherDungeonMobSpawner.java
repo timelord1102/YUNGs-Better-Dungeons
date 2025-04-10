@@ -15,7 +15,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.LevelReader;
@@ -60,7 +60,7 @@ public class SmallNetherDungeonMobSpawner extends StructureProcessor {
         if (blockInfoGlobal.state().getBlock() instanceof SpawnerBlock) {
             // Create spawner & populate with data
             MobSpawnerData spawner = MobSpawnerData.builder()
-                    .spawnPotentials(SimpleWeightedRandomList.single(new SpawnData(
+                    .spawnPotentials(WeightedList.of(new SpawnData(
                             Util.make(new CompoundTag(), (compoundTag) -> {
                                 compoundTag.putString("id", spawnerMob.toString());
                                 if (spawnerMob.toString().equals("minecraft:wither_skeleton")) {
@@ -102,7 +102,7 @@ public class SmallNetherDungeonMobSpawner extends StructureProcessor {
                             }),
                             Optional.empty(),
                             Optional.empty())))
-                    .setEntityType(BuiltInRegistries.ENTITY_TYPE.get(spawnerMob))
+                    .setEntityType(BuiltInRegistries.ENTITY_TYPE.getValue(spawnerMob))
                     .build();
             if (spawnerMob.toString().equals("minecraft:wither_skeleton")) {
                 spawner.nextSpawnData.getEntityToSpawn().put("ArmorItems", Util.make(new ListTag(), (armorItemsNbt) -> {

@@ -60,14 +60,14 @@ public class SpiderDungeonBigTunnelPiece extends SpiderDungeonPiece {
      */
     public SpiderDungeonBigTunnelPiece(CompoundTag compoundTag) {
         super(StructurePieceTypeModule.BIG_TUNNEL, compoundTag);
-        int[] start = compoundTag.getIntArray("startPos");
-        int[] end = compoundTag.getIntArray("endPos");
+        int[] start = compoundTag.getIntArray("startPos").get();
+        int[] end = compoundTag.getIntArray("endPos").get();
         this.startPos = new BlockPos(start[0], start[1], start[2]);
         this.endPos = new BlockPos(end[0], end[1], end[2]);
-        this.pitch = compoundTag.getFloat("pitch");
-        ListTag yawListNBT = compoundTag.getList("yawList", 5);
+        this.pitch = compoundTag.getFloatOr("pitch", 0.0F);
+        ListTag yawListNBT = compoundTag.getListOrEmpty("yawList");
         for (int i = 0; i < LENGTH; i++) {
-            this.yaws[i] = yawListNBT.getFloat(i);
+            this.yaws[i] = yawListNBT.getFloatOr(i, 0.0F);
         }
     }
 
@@ -221,7 +221,7 @@ public class SpiderDungeonBigTunnelPiece extends SpiderDungeonPiece {
         // Temporary chunk-local carving mask to prevent overwriting carved blocks and add decorations
         int xBits = 4;
         int zBits = 4;
-        int yBits = Mth.ceillog2(world.getMaxBuildHeight() - world.getMinBuildHeight());
+        int yBits = Mth.ceillog2(world.getMaxY() - world.getMinY());
         BitSet carvingMask = new BitSet((int) Math.pow(2, xBits + zBits + yBits));
 
         // Surface
@@ -257,8 +257,8 @@ public class SpiderDungeonBigTunnelPiece extends SpiderDungeonPiece {
             // Min and max values we need to consider for carving
             int minX = Mth.floor(caveStartX - xRadius) - chunkPos.x * 16 - 1;
             int maxX = Mth.floor(caveStartX + xRadius) - chunkPos.x * 16 + 1;
-            int minY = Mth.clamp(Mth.floor(caveStartY - yRadius) - 1, world.getMinBuildHeight(), world.getMaxBuildHeight());
-            int maxY = Mth.clamp(Mth.floor(caveStartY + yRadius) + 1, world.getMinBuildHeight(),  world.getMaxBuildHeight());
+            int minY = Mth.clamp(Mth.floor(caveStartY - yRadius) - 1, world.getMinY(), world.getMaxY());
+            int maxY = Mth.clamp(Mth.floor(caveStartY + yRadius) + 1, world.getMaxY(),  world.getMaxY());
             int minZ = Mth.floor(caveStartZ - zRadius) - chunkPos.z * 16 - 1;
             int maxZ = Mth.floor(caveStartZ + zRadius) - chunkPos.z * 16 + 1;
 
@@ -306,7 +306,7 @@ public class SpiderDungeonBigTunnelPiece extends SpiderDungeonPiece {
                         float radialYDist = (y - caveStartY - .5f) / yRadius;
 
                         // Calculate the carving mask for this block
-                        int mask = (int)x | (int)z << 4 | ((int)(y - world.getMinBuildHeight())) << 8;
+                        int mask = (int)x | (int)z << 4 | ((int)(y - world.getMinY())) << 8;
 
                         // Carve out blocks within the ellipsoid. Blocks immediately outside the ellipsoid will be turned into a cobblestone shell.
                         float radialDist = radialXDist * radialXDist + radialYDist * radialYDist + radialZDist * radialZDist;

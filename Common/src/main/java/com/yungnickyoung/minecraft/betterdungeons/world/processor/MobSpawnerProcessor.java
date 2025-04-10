@@ -10,7 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.block.Blocks;
@@ -56,11 +56,11 @@ public class MobSpawnerProcessor extends StructureProcessor {
         if (blockInfoGlobal.state().getBlock() instanceof SpawnerBlock) {
             // Create spawner & populate with data
             MobSpawnerData spawner = MobSpawnerData.builder()
-                    .spawnPotentials(SimpleWeightedRandomList.single(new SpawnData(
+                    .spawnPotentials(WeightedList.of(new SpawnData(
                             Util.make(new CompoundTag(), (compoundTag) -> compoundTag.putString("id", spawnerMob.toString())),
                             Optional.empty(),
                             Optional.empty())))
-                    .setEntityType(BuiltInRegistries.ENTITY_TYPE.get(spawnerMob))
+                    .setEntityType(BuiltInRegistries.ENTITY_TYPE.getValue(spawnerMob))
                     .build();
             CompoundTag nbt = spawner.save();
             blockInfoGlobal = new StructureTemplate.StructureBlockInfo(blockInfoGlobal.pos(), Blocks.SPAWNER.defaultBlockState(), nbt);
